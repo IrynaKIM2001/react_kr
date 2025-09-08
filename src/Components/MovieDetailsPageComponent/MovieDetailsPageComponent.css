@@ -1,0 +1,31 @@
+.main-content-detailsPage{
+    padding: 90px 0;
+    width: 97.8vw;
+    height: 100vh;
+
+}
+.image-container-detailsPage{
+    width: 100vw;
+    height: 100vh;
+}
+.image-container-detailsPage>img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.movie-info-detailsPage>p{
+    font-size: 20px;
+}
+.movie-info-detailsPage {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 15px;
+    height: 60vh;
+}
+.article-h3-detailsPage{
+    font-size: 45px;
+}

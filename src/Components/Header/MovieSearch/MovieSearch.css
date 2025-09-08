@@ -1,0 +1,30 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.search-inp-btn{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+.search-inp-btn>input{
+    width: 300px;
+    height: 25px;
+}
+.search-inp-btn>button{
+    width: 100px;
+    height: 25px;
+    background-color: #fce99f;
+    color: #1d2f3f;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
