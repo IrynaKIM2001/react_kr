@@ -1,7 +1,7 @@
 import {MovieListCards} from "../Components/MovieListCards/MovieListCards.tsx";
 import {HeaderComponent} from "../Components/Header/HeaderComponent/HeaderComponent.tsx";
 import {MoviesSection} from "../Components/MovieSection/MoviesSection.tsx";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import type {IMovieModel} from "../Models/IMovieModel.ts";
 import {SearchDivComponent} from "../Components/SearchDivComponent/SearchDivComponent.tsx";
 
@@ -13,23 +13,37 @@ export const MoviesPage = () => {
     const handleGenreSelect = (genreName: string, genreId: number) => {
         setSelectedGenre(genreName);
         setGenreId(genreId);
-        const element = document.getElementById("movies-section");
-        if (element) {
-            element.scrollIntoView({ behavior: "smooth" });
-        }
-    };
 
+    };
+    useEffect(() => {
+        if (genreId !== null) {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        }
+    }, [genreId]);
     const handleSearchResults = (movies: IMovieModel[]) => {
         setMovies(movies);
+    };
+    const handleShowPopular = () => {
+        setSelectedGenre(null);
+        setGenreId(null);
     };
 
     return (
         <>
-            <HeaderComponent onGenreSelected={handleGenreSelect} onSearchResults={handleSearchResults}/>
-            <MovieListCards/>
-            <div id="movies-section">
-                <MoviesSection selectedGenre={selectedGenre} genreId={genreId} />
-            </div>
+            <HeaderComponent
+                onGenreSelected={handleGenreSelect}
+                onShowPopular={handleShowPopular}
+                onSearchResults={handleSearchResults}/>
+            {genreId ? (
+                <MoviesSection
+                    selectedGenre={selectedGenre} genreId={genreId}
+                />
+            ) : (
+                <MovieListCards />
+            )}
             <SearchDivComponent onResults={handleSearchResults} movies={movies} genreId={genreId}/>
         </>
     );

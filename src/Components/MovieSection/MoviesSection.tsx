@@ -1,8 +1,10 @@
 import {type FC, useEffect, useState} from "react";
-import { getMoviesWithGenres } from "../../Services/services.api.ts";
+import {getMoviesByGenre} from "../../Services/services.api.ts";
 import {MovieListCard} from "../MovieListCard/MovieListCard.tsx";
 import type {IMovieListItem} from "../../Models/IMovieListItem.ts";
 import './MoviesSection.css';
+import {useSearchParams} from "react-router";
+import {PaginationComponent} from "../PaginationComponent/PaginationComponent.tsx";
 
 interface MoviesSectionProps {
     selectedGenre: string | null;
@@ -11,38 +13,47 @@ interface MoviesSectionProps {
 
 export const MoviesSection:FC<MoviesSectionProps> = ({ selectedGenre, genreId }) => {
     const [movies, setMovies] = useState<IMovieListItem[]>([]);
-    const [filteredMovies, setFilteredMovies] = useState<IMovieListItem[]>([]);
-
-    useEffect(() => {
-        getMoviesWithGenres().then((movies) => {
-            setMovies(movies.results.map((movie) => ({
-                id: movie.id,
-                title: movie.title,
-                poster_path: movie.poster_path,
-                genre_ids: movie.genre_ids,
-                genres: movie.genres,
-                overview: movie.overview,
-            })));
-        });
-    }, []);
+    const [loading, setLoading]=useState(false);
+    const [totalPages, setTotalPages] = useState(1);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
     useEffect(() => {
         if (genreId !== null) {
-            const filtered = movies.filter((movie) => movie.genre_ids.includes(genreId));
-            setFilteredMovies(filtered);
+            setLoading(true);
+            getMoviesByGenre(genreId, currentPage)
+                .then(data => {
+                    setMovies(data.results);
+                    setTotalPages(Math.min(data.total_pages, 500));
+                })
+                .finally(() => setLoading(false));
+        } else {
+            setMovies([]);
         }
-    }, [genreId, movies]);
-
+    }, [genreId, currentPage]);
+    const handlePageChange = (page: number) => {
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set('page', page.toString());
+        setSearchParams(newSearchParams);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
     return (
         <section className="filtered-movies-section">
             <div className="container-genres">
                 {selectedGenre && <h2>Фільми у вибраному жанрі: {selectedGenre}</h2>}
                 <div className="movies-container">
-                    {filteredMovies.map((movie) => (
-                                <MovieListCard key={movie.id} movie={movie}/>
-                             )
-                    )}
+                    {movies.map((movie) => (
+                        <MovieListCard key={movie.id} movie={movie} />
+                    ))}
                 </div>
+
+                {totalPages > 1 && !loading && (
+                    <PaginationComponent
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                    />
+                )}
             </div>
         </section>
     );

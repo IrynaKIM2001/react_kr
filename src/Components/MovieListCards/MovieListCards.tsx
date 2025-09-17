@@ -4,13 +4,16 @@ import { PaginationComponent } from "../PaginationComponent/PaginationComponent.
 import './MovieListCards.css';
 import type {IMoviesArrayModel} from "../../Models/IMoviesArrayModel.ts";
 import {MovieListCard} from "../MovieListCard/MovieListCard.tsx";
+import {useSearchParams} from "react-router";
 
 
 export const MovieListCards = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [movies, setMovies] = useState<IMoviesArrayModel | undefined>(undefined);
-    const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
+    const currentPage = parseInt(searchParams.get('page') || '1', 10);
+
     const fetchMovies = async (page: number = 1) => {
         setLoading(true);
         const data = await getMoviesWithGenres(page);
@@ -18,13 +21,20 @@ export const MovieListCards = () => {
         setTotalPages(data.total_pages);
         setLoading(false);
     };
+
     const handlePageChange = (page: number) => {
-        setCurrentPage(page);
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set('page', page.toString());
+        setSearchParams(newSearchParams);
+        window.scrollTo({ top: 0, behavior: 'smooth' })
     };
+
     useEffect(() => {
         fetchMovies(currentPage);
     }, [currentPage]);
+
         if (loading) return <div>Loading...</div>;
+
     return (
         <main>
             <section className="carousel-container">

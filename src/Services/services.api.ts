@@ -8,32 +8,33 @@ const axiosInstanse= axios.create({
     headers: {'content-type': 'application/json'}
 });
 
+const MoviesWithGenres = async (moviesPromise: Promise<{ data: IMoviesArrayModel }>): Promise<IMoviesArrayModel> => {
+    const [moviesResponse, genres] = await Promise.all([
+        moviesPromise,
+        getGenres()
+    ]);
+
+    const moviesWithFullGenres = moviesResponse.data.results.map(movie => {
+        const movieGenres = movie.genre_ids.map(genreId => {
+            return genres.find(g => g.id === genreId) || null;
+        }).filter((genre): genre is IGenreModel => genre !== null);
+        return { ...movie, genres: movieGenres };
+    });
+
+    return { ...moviesResponse.data, results: moviesWithFullGenres };
+};
+
 export const getGenres  = async():Promise<IGenreModel[]>=>{
     const axiosResponseGenre= await axiosInstanse.get<{genres:IGenreModel[]}>(
         `/genre/movie/list?api_key=${import.meta.env.VITE_API_BASE_TMDB_KEY}&language=uk-UA`);
     return axiosResponseGenre.data.genres;
 }
 
-export const getMoviesPage = async (page: number = 1) => {
-    const response = await axiosInstanse.get<IMoviesArrayModel>(
-        `/movie/popular?api_key=${import.meta.env.VITE_API_BASE_TMDB_KEY}&language=uk-UA&page=${page}`
-    );
-    return response.data;
-};
-
 export const getMoviesWithGenres = async (page:number=1): Promise<IMoviesArrayModel> => {
-        const moviesData = await getMoviesPage(page);
-        const genres = await getGenres();
-
-        const moviesWithGenres = moviesData.results.map(movie => {
-            const movieGenres = movie.genre_ids.map(genreId => {
-                const genre = genres.find(g => g.id === genreId);
-                return genre || null;
-            }).filter((genre): genre is IGenreModel => genre !== null);
-
-            return { ...movie, genres: movieGenres };
-        });
-        return { ...moviesData, results: moviesWithGenres };
+        const moviesPromise = axiosInstanse.get<IMoviesArrayModel>(
+            `/movie/popular?api_key=${import.meta.env.VITE_API_BASE_TMDB_KEY}&language=uk-UA&page=${page}`
+        );
+        return MoviesWithGenres(moviesPromise);
 };
 
 export const getMovieById = async (id: string): Promise<IMovieModel> => {
@@ -43,40 +44,17 @@ export const getMovieById = async (id: string): Promise<IMovieModel> => {
     return axiosResponse.data;
 };
 
-export const getMoviesByGenre = async (genreId: number,page:number=1): Promise<IMoviesArrayModel> => {
-    let allMovies: IMovieModel[] = [];
-    let totalPages = 1;
-    while (page <= totalPages) {
-        const response = await axiosInstanse.get<IMoviesArrayModel>(
-            `/movie/popular?api_key=${import.meta.env.VITE_API_BASE_TMDB_KEY}&language=uk-UA&with_genres=${genreId}&page=${page}`
-        );
+export const getMoviesByGenre = async (genreId: number, page: number = 1): Promise<IMoviesArrayModel> => {
+    const moviesPromise = axiosInstanse.get<IMoviesArrayModel>(
+        `/discover/movie?api_key=${import.meta.env.VITE_API_BASE_TMDB_KEY}&language=uk-UA&with_genres=${genreId}&page=${page}`
 
-        allMovies = [...allMovies, ...response.data.results];
-        totalPages = response.data.total_pages;
-        page++;
-    }
-    return {
-        results: allMovies,
-        total_pages: totalPages,
-        total_results: allMovies.length,
-        page: 1,
-    };
+    );
+    return MoviesWithGenres(moviesPromise);
 };
 
 export const searchMovies = async (query: string, page: number = 1): Promise<IMoviesArrayModel> => {
-    const response = await axiosInstanse.get<IMoviesArrayModel>(
+    const moviesPromise = axiosInstanse.get<IMoviesArrayModel>(
         `/search/movie?api_key=${import.meta.env.VITE_API_BASE_TMDB_KEY}&language=uk-UA&query=${query}&page=${page}`
     );
-    const genres = await getGenres();
-
-    const moviesWithGenres = response.data.results.map(movie => {
-        const movieGenres = movie.genre_ids.map(genreId => {
-            const genre = genres.find(g => g.id === genreId);
-            return genre || null;
-        }).filter((genre): genre is IGenreModel => genre !== null);
-
-        return { ...movie, genres: movieGenres };
-    });
-
-    return { ...response.data, results: moviesWithGenres };
+    return MoviesWithGenres(moviesPromise);
 };

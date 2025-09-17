@@ -1,6 +1,6 @@
 import {HeaderComponent} from "../Components/Header/HeaderComponent/HeaderComponent.tsx";
 import {MovieDetailsPageComponent} from "../Components/MovieDetailsPageComponent/MovieDetailsPageComponent.tsx";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import type {IMovieModel} from "../Models/IMovieModel.ts";
 import {MoviesSection} from "../Components/MovieSection/MoviesSection.tsx";
 import {SearchDivComponent} from "../Components/SearchDivComponent/SearchDivComponent.tsx";
@@ -21,9 +21,24 @@ export const MovieDetailsPage = () => {
     const handleSearchResults = (movies: IMovieModel[]) => {
         setMovies(movies);
     };
+    useEffect(() => {
+        if (genreId !== null) {
+            window.scrollTo({
+                top: window.innerHeight,
+                behavior: "smooth"
+            });
+        }
+    }, [genreId]);
+    const handleShowPopular = () => {
+        setSelectedGenre(null);
+        setGenreId(null);
+    };
     return (
         <>
-            <HeaderComponent onGenreSelected={handleGenreSelect} onSearchResults={handleSearchResults} />
+            <HeaderComponent
+                onGenreSelected={handleGenreSelect}
+                onShowPopular={handleShowPopular}
+                onSearchResults={handleSearchResults} />
             <MovieDetailsPageComponent/>
             <div id="movies-section">
                 <MoviesSection selectedGenre={selectedGenre} genreId={genreId}/>

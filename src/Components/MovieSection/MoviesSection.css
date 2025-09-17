@@ -10,6 +10,12 @@
 
 .container-genres{
     width: 98.9vw;
+    margin-top: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
 }
 .container-genres>h2{
     margin-top: 30px;
